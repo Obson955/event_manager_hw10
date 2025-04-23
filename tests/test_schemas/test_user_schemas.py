@@ -16,6 +16,37 @@ def test_user_create_valid(user_create_data):
     assert user.nickname == user_create_data["nickname"]
     assert user.password == user_create_data["password"]
 
+# Tests for password validation
+def test_password_too_short(user_create_data):
+    user_create_data["password"] = "Abc1!"  # Only 5 characters
+    with pytest.raises(ValidationError) as exc_info:
+        UserCreate(**user_create_data)
+    assert "Password must be at least 8 characters" in str(exc_info.value)
+
+def test_password_no_uppercase(user_create_data):
+    user_create_data["password"] = "abcdefg1!"  # No uppercase
+    with pytest.raises(ValidationError) as exc_info:
+        UserCreate(**user_create_data)
+    assert "Password must contain an uppercase letter" in str(exc_info.value)
+
+def test_password_no_lowercase(user_create_data):
+    user_create_data["password"] = "ABCDEFG1!"  # No lowercase
+    with pytest.raises(ValidationError) as exc_info:
+        UserCreate(**user_create_data)
+    assert "Password must contain a lowercase letter" in str(exc_info.value)
+
+def test_password_no_number(user_create_data):
+    user_create_data["password"] = "AbcdEfgh!"  # No number
+    with pytest.raises(ValidationError) as exc_info:
+        UserCreate(**user_create_data)
+    assert "Password must contain a number" in str(exc_info.value)
+
+def test_password_no_special_char(user_create_data):
+    user_create_data["password"] = "AbcdEfgh1"  # No special character
+    with pytest.raises(ValidationError) as exc_info:
+        UserCreate(**user_create_data)
+    assert "Password must contain a special character" in str(exc_info.value)
+
 # Tests for UserUpdate
 def test_user_update_valid(user_update_data):
     user_update = UserUpdate(**user_update_data)
@@ -80,4 +111,3 @@ def test_user_base_invalid_email(user_base_data_invalid):
     
     assert "value is not a valid email address" in str(exc_info.value)
     assert "john.doe.example.com" in str(exc_info.value)
-    
