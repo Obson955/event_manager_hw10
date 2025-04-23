@@ -17,9 +17,20 @@ class UserRole(str, Enum):
 def validate_url(url: Optional[str]) -> Optional[str]:
     if url is None:
         return url
-    url_regex = r'^https?:\/\/[^\s/$.?#].[^\s]*$'
+        
+    # Check URL length (most browsers support URLs up to 2048 characters)
+    if len(url) > 2048:
+        raise ValueError('URL is too long (max 2048 characters)')
+    
+    # Check for http:// or https:// protocol
+    if not url.startswith(('http://', 'https://')):
+        raise ValueError('URL must start with http:// or https://')
+    
+    # More comprehensive URL validation
+    url_regex = r'^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$'
     if not re.match(url_regex, url):
-        raise ValueError('Invalid URL format')
+        raise ValueError('Invalid URL format. URL must contain a valid domain name')
+    
     return url
 
 class UserBase(BaseModel):
