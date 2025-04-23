@@ -104,6 +104,31 @@ def test_user_base_url_invalid(url, user_base_data):
     with pytest.raises(ValidationError):
         UserBase(**user_base_data)
 
+# Test for URL length validation
+def test_user_base_url_too_long(user_base_data):
+    # Create a URL that exceeds 2048 characters
+    long_url = "https://example.com/" + "a" * 2040
+    user_base_data["profile_picture_url"] = long_url
+    with pytest.raises(ValidationError) as exc_info:
+        UserBase(**user_base_data)
+    assert "URL is too long" in str(exc_info.value)
+
+# Test for URL protocol validation
+@pytest.mark.parametrize("url", ["invalid-url", "www.example.com", "example.com"])
+def test_user_base_url_protocol(url, user_base_data):
+    user_base_data["profile_picture_url"] = url
+    with pytest.raises(ValidationError) as exc_info:
+        UserBase(**user_base_data)
+    assert "URL must start with http:// or https://" in str(exc_info.value)
+
+# Test for URL domain validation
+@pytest.mark.parametrize("url", ["http://", "https://invalid", "http://invalid."])
+def test_user_base_url_domain(url, user_base_data):
+    user_base_data["profile_picture_url"] = url
+    with pytest.raises(ValidationError) as exc_info:
+        UserBase(**user_base_data)
+    assert "Invalid URL format" in str(exc_info.value)
+
 # Tests for UserBase
 def test_user_base_invalid_email(user_base_data_invalid):
     with pytest.raises(ValidationError) as exc_info:
