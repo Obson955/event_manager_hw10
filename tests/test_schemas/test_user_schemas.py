@@ -47,6 +47,19 @@ def test_user_base_nickname_invalid(nickname, user_base_data):
     with pytest.raises(ValidationError):
         UserBase(**user_base_data)
 
+# Test for nickname maximum length validation
+def test_user_base_nickname_too_long(user_base_data):
+    user_base_data["nickname"] = "a" * 31  # 31 characters, exceeding the 30 char limit
+    with pytest.raises(ValidationError):
+        UserBase(**user_base_data)
+        
+# Test for reserved nickname validation
+@pytest.mark.parametrize("reserved_name", ["admin", "administrator", "system", "root", "superuser", "moderator"])
+def test_user_base_reserved_nickname(reserved_name, user_base_data):
+    user_base_data["nickname"] = reserved_name
+    with pytest.raises(ValidationError):
+        UserBase(**user_base_data)
+
 # Parametrized tests for URL validation
 @pytest.mark.parametrize("url", ["http://valid.com/profile.jpg", "https://valid.com/profile.png", None])
 def test_user_base_url_valid(url, user_base_data):
@@ -67,3 +80,4 @@ def test_user_base_invalid_email(user_base_data_invalid):
     
     assert "value is not a valid email address" in str(exc_info.value)
     assert "john.doe.example.com" in str(exc_info.value)
+    
